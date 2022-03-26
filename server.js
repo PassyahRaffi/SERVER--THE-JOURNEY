@@ -13,7 +13,7 @@ app.use("/api/v1/", router);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (request, response) => {
-  response.json("Hello from server");
+  response.json("Welcome to server!");
 });
 
 app.listen(PORT, () => {
