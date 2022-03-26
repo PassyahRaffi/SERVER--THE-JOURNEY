@@ -86,7 +86,7 @@ exports.addPost = async (request, response) => {
     };
 
     const result = await cloudinary.uploader.upload(request.file.path, {
-      folder: "Post_files",
+      folder: "Blog_files",
       use_filename: true,
       unique_filename: true,
     });
