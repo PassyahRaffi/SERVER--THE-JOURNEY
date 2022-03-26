@@ -127,7 +127,7 @@ exports.login = async (request, response) => {
       });
     }
     
-    const result = await cloudinary.uploader.upload(request.file.path, {
+    const result = await cloudinary.v2.uploader.upload(request.file.path, {
       folder: "image_files",
       use_filename: true,
       unique_filename: true,
@@ -177,7 +177,7 @@ exports.checkAuth = async (request, response) => {
       });
     }
 
-    const result = await cloudinary.uploader.upload(request.file.path, {
+    const result = await cloudinary.v2.uploader.upload(request.file.path, {
       folder: "image_files",
       use_filename: true,
       unique_filename: true,
