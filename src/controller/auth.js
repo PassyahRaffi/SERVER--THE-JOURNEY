@@ -126,12 +126,6 @@ exports.login = async (request, response) => {
         message: "Password Incorrect!",
       });
     }
-    
-    const result = await cloudinary.v2.uploader.upload(request.file.path, {
-      folder: "image_files",
-      use_filename: true,
-      unique_filename: true,
-    });
 
     const token = jwt.sign({ id: existUser.id }, process.env.JWT_KEY);
     const user = {
@@ -139,7 +133,7 @@ exports.login = async (request, response) => {
       name: existUser.name,
       email: existUser.email,
       phone: existUser.phone,
-      image: result.public_id + existUser.image, /* add here */
+      image: uploadServer + existUser.image, /* add here */
       token,
     };
 
@@ -177,12 +171,6 @@ exports.checkAuth = async (request, response) => {
       });
     }
 
-    const result = await cloudinary.v2.uploader.upload(request.file.path, {
-      folder: "image_files",
-      use_filename: true,
-      unique_filename: true,
-    });
-
     response.send({
       status: "success",
       data: {
@@ -191,7 +179,7 @@ exports.checkAuth = async (request, response) => {
           name: dataUser.name,
           email: dataUser.email,
           phone: dataUser.phone,
-          image: result.public_id + dataUser.image, /* add here */
+          image: uploadServer + dataUser.image, /* add here */
         },
       },
     });
