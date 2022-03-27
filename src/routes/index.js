@@ -38,7 +38,7 @@ router.get("/posts", getAllPost);
 router.post("/addPost", auth, uploadFile("thumbnail"), addPost);
 router.post("/editPost/:id", auth, editPost);
 router.get("/detail/:id", detailPost);
-router.delete("/delete/:id", deletePost);
+router.post("/delete/:id", deletePost);
 router.get("/postUser/:id", getPostUser);
 router.get("/getPost/:id", getPost);
 
