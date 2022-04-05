@@ -5,7 +5,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // input variabel upload server
-const uploadServer = "http://localhost:5000/uploads/";
+// const uploadServer = "http://localhost:5000/uploads/";
+
+const cloudinary = require("../utils/cloudinary");
 
 exports.register = async (request, response) => {
   // Joi scheme
@@ -16,7 +18,10 @@ exports.register = async (request, response) => {
     password: joi.string().min(4).required(),
   });
 
+  // Do Validation & get error object from Schema
   const { error } = scheme.validate(request.body);
+
+  // If error exist send Validation error message
   if (error) {
     return response.status(400).send({
       error: {
@@ -41,7 +46,9 @@ exports.register = async (request, response) => {
       });
     }
 
+    // Generate salt (random value) with 10 rounds
     const salt = await bcrypt.genSalt(10);
+    // Hashing password from request with salt
     const hashedPassword = await bcrypt.hash(request.body.password, salt);
 
     const newUser = await tb_user.create({
@@ -85,12 +92,15 @@ exports.register = async (request, response) => {
 };
 
 exports.login = async (request, response) => {
+  // Validation Schema
   const scheme = joi.object({
     email: joi.string().email().min(6).required(),
     password: joi.string().min(4).required(),
   });
 
+  // Do Validation & get error object from Schema
   const { error } = scheme.validate(request.body);
+  // If error exist send Validation error message
   if (error) {
     return response.status(400).send({
       error: {
@@ -116,10 +126,12 @@ exports.login = async (request, response) => {
       });
     }
 
+    // Compare password between entered from client and from database
     const isValid = await bcrypt.compare(
       request.body.password,
       existUser.password
     );
+    // Check if not valid then return response with status 400 ( Bad Request )
     if (!isValid) {
       return response.status(400).send({
         status: "failed",
@@ -127,13 +139,14 @@ exports.login = async (request, response) => {
       });
     }
 
-    const token = jwt.sign({ id: existUser.id }, process.env.JWT_KEY);
+    const token = jwt.sign({ id: existUser.id, name: existUser.name, email: existUser.email, image: existUser.image }, process.env.JWT_KEY);
+    
     const user = {
       id: existUser.id,
       name: existUser.name,
       email: existUser.email,
       phone: existUser.phone,
-      image: uploadServer + existUser.image, /* add here */
+      image: process.env.USER_PATH + "user-journey/" + existUser.image, /* add here */
       token,
     };
 
@@ -179,7 +192,7 @@ exports.checkAuth = async (request, response) => {
           name: dataUser.name,
           email: dataUser.email,
           phone: dataUser.phone,
-          image: uploadServer + dataUser.image, /* add here */
+          image: process.env.USER_PATH + "user-journey/" + existUser.image, /* add here */
         },
       },
     });

@@ -1,4 +1,7 @@
 const { tb_user } = require("../../models");
+const jwt_decode = require('jwt-decode');
+
+const cloudinary = require("../utils/cloudinary");
 
 exports.addUsers = async (request, response) => {
   try {
@@ -40,35 +43,66 @@ exports.getUsers = async (request, response) => {
   }
 };
 
-exports.getUser = async (request, response) => {
+// exports.getUser = async (request, response) => {
+//   try {
+//     const { id } = request.params;
+//     const data = await tb_user.findOne({
+//       attributes: {
+//         exclude: ["password", "createdAt", "updatedAt"],
+//       },
+//       where: {
+//         id,
+//       },
+//     });
+
+//     if (!data) {
+//       return response.status(404).send({
+//         status: "failed",
+//         message: "User Not Found!",
+//       });
+//     }
+
+//     response.send({
+//       status: "success",
+//       message: "Get User Success!",
+//       user: data,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     response.status(500).send({
+//       status: "failed",
+//       message: "Server Error!",
+//     });
+//   }
+// };
+
+exports.getUser = async (req, res) => {
   try {
-    const { id } = request.params;
+    const token = req.header("Authorization")
+    let decoded = jwt_decode(token)
+
     const data = await tb_user.findOne({
+      where: {
+        id: decoded.id,
+      },
       attributes: {
         exclude: ["password", "createdAt", "updatedAt"],
       },
-      where: {
-        id,
-      },
     });
 
-    if (!data) {
-      return response.status(404).send({
-        status: "failed",
-        message: "User Not Found!",
-      });
-    }
-
-    response.send({
-      status: "success",
-      message: "Get User Success!",
-      user: data,
+    res.send({
+      status: "Success",
+      data: {
+        email: data.email,
+        name: data.name,
+        image: process.env.USER_PATH + data.image,
+      },
     });
   } catch (error) {
     console.log(error);
-    response.status(500).send({
-      status: "failed",
-      message: "Server Error!",
+    res.send({
+      status: "Failed",
+      message: "Server Error",
     });
   }
 };
@@ -125,17 +159,37 @@ exports.updateUser = async (request, response) => {
 exports.updateUserImage = async (request, response) => {
   try {
     const { id } = request.params;
+    let decoded = jwt_decode(token)
+
+    const oldFile = await tb_user.findOne({
+      where: {
+        id: decoded.id
+      }
+    })
+
+    // let imageFile = "uploads/" + oldFile.image
+    if ( oldFile.image !== "default.png" ) {
+      cloudinary.uploader.destroy(oldFile.image, function (result) {
+        console.log(result);
+      });
+    }
+
+    const result = await cloudinary.uploader.upload(request.file.path, {
+      folder: "APP-THE-JOURNEY",
+      use_filename: true,
+      unique_filename: true,
+    });
+
     const data = await tb_user.update(
       {
-        image: request.file.filename,
+        image: result.public_id,
       },
       {
         where: {
-          id,
+          id: decoded.id
         },
       }
     );
-    console.log(request.file);
 
     response.status(200).send({
       status: "Success",
