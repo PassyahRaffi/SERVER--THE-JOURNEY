@@ -76,9 +76,9 @@ exports.getUsers = async (request, response) => {
 //   }
 // };
 
-exports.getUser = async (req, res) => {
+exports.getUser = async (request, response) => {
   try {
-    const token = req.header("Authorization")
+    const token = request.header("Authorization")
     let decoded = jwt_decode(token)
 
     const data = await tb_user.findOne({
@@ -90,7 +90,7 @@ exports.getUser = async (req, res) => {
       },
     });
 
-    res.send({
+    response.send({
       status: "Success",
       data: {
         email: data.email,
@@ -100,7 +100,7 @@ exports.getUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.send({
+    response.send({
       status: "Failed",
       message: "Server Error",
     });
